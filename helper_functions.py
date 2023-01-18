@@ -4,8 +4,11 @@
 """
 
 import numpy as np
-from sklearn.metrics import max_error, mean_absolute_percentage_error, \
-    mean_absolute_error, mean_squared_error, median_absolute_error, r2_score
+import pandas as pd
+from sklearn.metrics import (max_error, mean_absolute_error,
+                             mean_absolute_percentage_error,
+                             mean_squared_error, median_absolute_error,
+                             r2_score)
 
 
 def get_scores(y_true, y_pred):
@@ -196,3 +199,30 @@ def get_common_models():
          'Mahindra Ssangyong'
     ]
     return common_brands_models
+
+
+def get_predictions(model, y_transformer, df):
+    '''
+    Get cars' prices predictions.
+
+    Parameters
+    ----------
+    model : sklearn.pipeline.Pipeline
+        Pipeline with data transformations and a model.
+    y_transformer : sklearn.preprocessing transformer, e.g. QuantileTransformer
+        Transformer used on the target (y_train) before fittng the model.
+    df : pandas.DataFrame
+        Data about cars, without predicted prices.
+
+    Returns
+    -------
+    df : pandas.DataFrame
+        Data about cars along with predicted prices in Predicted_Price column.
+
+    '''
+    prediction = model.predict(df)
+    prediction_transformed = y_transformer.inverse_transform(
+        prediction.reshape(-1, 1))
+    df['Predicted_Price'] = pd.Series(
+        [round(val[0], 2) for val in prediction_transformed])
+    return df
